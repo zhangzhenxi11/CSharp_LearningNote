@@ -1,0 +1,92 @@
+现在我来详细分析这两个示例，并解释模板方法和回调方法的区别：
+
+## 委托的两种用法分析
+
+### 1. 模板方法模式 (DelegateUsage1)
+
+**核心特征：**
+
+- **"借用"外部方法来产生结果** - 就像填空题
+- **委托有返回值** (`Func<Product>`)
+- **位于代码中部** - 在处理流程的中间环节
+
+```csharp
+public Box WrapProduct(Func<Product> getProduct)
+{
+    Box box = new Box();
+    Product product = getProduct.Invoke(); // 借用外部方法获得产品
+    box.Product = product; // 继续后续处理
+    return box;
+}
+```
+
+### 2. 回调方法模式 (DelegateUsage_Callback)
+
+**核心特征：**
+
+- **调用指定的外部方法执行额外操作** - 就像流水线上的额外工序
+- **委托通常无返回值** (`Action<Product>`)
+- **位于代码结尾或特定条件触发**
+
+```csharp
+public Box WrapProduct(Func<Product> getProduct, Action<Product> logCallBack)
+{
+    Box box = new Box();
+    Product product = getProduct.Invoke();
+    if (product.Price >= 50)
+    { 
+        logCallBack(product); // 回调外部方法进行日志记录
+    }
+    box.Product = product;
+    return box;
+}
+```
+
+## 模板方法 vs 回调方法的核心区别
+
+| 特征         | 模板方法                 | 回调方法                   |
+| ------------ | ------------------------ | -------------------------- |
+| **目的**     | 借用外部逻辑填补算法空白 | 通知外部执行额外操作       |
+| **返回值**   | 通常有返回值 (`Func<T>`) | 通常无返回值 (`Action<T>`) |
+| **执行时机** | 算法流程中间             | 算法结束或特定事件         |
+| **类比**     | 填空题                   | 流水线通知                 |
+| **控制权**   | 主动获取结果             | 被动通知执行               |
+
+## 与C++函数指针的对比
+
+你提到在C++中常用函数指针作回调，这确实是回调模式的经典应用：
+
+**C++回调示例：**
+
+```cpp
+// C++风格的回调
+void processData(int data, void(*callback)(int result)) {
+    int processed = data * 2;
+    callback(processed); // 回调通知结果
+}
+```
+
+**C#委托回调对应：**
+
+```csharp
+// C#委托回调
+public void ProcessData(int data, Action<int> callback) {
+    int processed = data * 2;
+    callback(processed); // 委托回调通知结果
+}
+```
+
+## 实际应用场景
+
+**模板方法适用于：**
+
+- 算法框架固定，但某些步骤需要外部实现
+- 依赖注入场景
+- 策略模式实现
+
+**回调方法适用于：**
+
+- 事件通知
+- 异步操作完成通知
+- 日志记录、监控
+- 错误处理

@@ -1,0 +1,72 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <TargetFrameworks>net9-windows;net8-windows;net6-windows;net5-windows;netcoreapp3.1;net48;net472</TargetFrameworks>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <Authors>miroiu</Authors>
+    <Company />
+    <PackageId>Nodify</PackageId>
+    <Product>Nodify</Product>
+    <Description>The core controls for a node based editor (designed for MVVM)</Description>
+    <Copyright>Miroiu Emanuel</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/miroiu/nodify</PackageProjectUrl>
+    <PackageIcon>icon.png</PackageIcon>
+    <RepositoryUrl>https://github.com/miroiu/nodify</RepositoryUrl>
+    <PackageTags>wpf mvvm node network node-editor graph controls</PackageTags>
+    <Version>7.1.0</Version>
+    <PackageReleaseNotes>
+      &gt; - Breaking Changes:
+      &gt;	  - Added ProcessHandledEvents to IInputHandler and removed it from InputProcessor
+      &gt;	  - Renamed EditorGestures.Editor.ResetViewportLocation to EditorGestures.Editor.ResetViewport
+      &gt; - Features:
+      &gt;	  - Introduced a new BringIntoView method overload in NodifyEditor that accepts an offset from the viewport edges
+      &gt;	  - Added BringIntoViewEdgeOffset to NodifyEditor to control the viewport edge offset when bringing the focused element into view
+      &gt;	  - Added ResetViewport to NodifyEditor to reset the viewport's location and zoom
+      &gt;	  - Improved tab and directional navigation, ensuring that focused elements are automatically brought into view
+      &gt;	  - Added keyboard navigation layers for nodes, connections and decorators; restricting keyboard navigation to the active layer
+      &gt;	  - Added ActiveNavigationLayer, ActivateNextNavigationLayer, ActivatePreviousNavigationLayer, RegisterNavigationLayer, RemoveNavigationLayer and ActivateNavigationLayer to NodifyEditor for keyboard layers management
+      &gt;	  - Added KeyboardNavigationLayer property to NodifyEditor that allows navigating through the ItemContainers
+      &gt;	  - Added AutoRegisterConnectionsLayer, AutoRegisterDecoratorsLayer, AutoFocusFirstElement, AutoPanOnNodeFocus, PanViewportOnKeyboardDrag and MinimumNavigationStepSize to NodifyEditor
+      &gt;	  - Added EditorGestures.Editor.Keyboard for keyboard navigation gestures
+      &gt;	  - Added FindNextFocusTarget, OnElementFocused and OnKeyboardNavigationLayerActivated virtual methods to NodifyEditor
+      &gt;	  - Added new gestures for keyboard navigation available in EditorGestures.Editor.Keyboard
+      &gt;	  - Added ToggleContentSelection to GroupingNode and its corresponding gesture to toggle the selection of nodes inside the group
+      &gt;	  - Added ZoomIn, ZoomOut and ResetViewport methods to the Minimap control
+      &gt;	  - Added ZoomIn, ZoomOut, ResetViewport and Pan gestures to EditorGestures.Minimap
+      &gt;	  - Added NavigationStepSize static property to Minimap
+      &gt;	  - Added Unbind to all gestures inside EditorGestures
+      &gt;	  - Added the KeyComboGesture that requires a trigger key to be held down before pressing a combo key
+      &gt;	  - Added FocusVisualPen and FocusVisualPadding dependency properties to BaseConnection
+      &gt;	  - Added default focus visuals for base editor controls that can be included by referencing the FocusVisual.xaml file
+      &gt;	  - Added MaxHotKeys and HotKeysDisplayMode static configuration fields to PendingConnection
+      &gt;	  - Added HotKeyControl with its corresponding theme resources to display the hotkeys for a pending connection
+    </PackageReleaseNotes>
+    <AssemblyOriginatorKeyFile>..\build\Nodify.snk</AssemblyOriginatorKeyFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)'=='net472' OR '$(TargetFramework)'=='net48'">
+    <LangVersion>8.0</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <SignAssembly>true</SignAssembly>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="..\icon.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="StringMath" Version="4.1.3" />
+  </ItemGroup>
+
+</Project>
