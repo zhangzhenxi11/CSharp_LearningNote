@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Solution_AndroidApp.MainPage">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Editor x:Name="Tb1" Grid.Row="0"/>
+        <Editor x:Name="Tb2" Grid.Row="1"/>
+        <Editor x:Name="Tb3" Grid.Row="2"/>
+        <Grid Grid.Row="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Button x:Name="Btn1" Grid.Column="0" Text="Add" Clicked="DoAdd"/>
+            <Button x:Name="Btn2" Grid.Column="1" Text="Sub" Clicked="DoSub"/>
+            <Button x:Name="Btn3" Grid.Column="2" Text="Mul" Clicked="DoMul"/>
+            <Button x:Name="Btn4" Grid.Column="3" Text="Div" Clicked="DoDiv"/>
+        </Grid>
+    </Grid>
+
+</ContentPage>

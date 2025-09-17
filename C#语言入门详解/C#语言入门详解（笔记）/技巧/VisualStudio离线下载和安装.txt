@@ -1,0 +1,24 @@
+命令格式：
+.\安装文件.exe --layout 离线保存目录
+
+三个版本完整下载：
+.\VisualStudioSetup_Community_2022.exe --layout d:\VisualStudio_Community_2022_OffLine
+.\VisualStudioSetup_Professional_2022.exe --layout d:\VisualStudio_Professional_2022_OffLine
+.\VisualStudioSetup_Enterprise_2022.exe --layout d:\VisualStudio_Enterprise_2022_OffLine
+
+
+三合一：
+.\VisualStudioSetup_Community_2022.exe --layout d:\VisualStudio_2022_OffLine
+.\VisualStudioSetup_Professional_2022.exe --layout d:\VisualStudio_2022_OffLine
+.\VisualStudioSetup_Enterprise_2022.exe --layout d:\VisualStudio_2022_OffLine
+
+
+重要：
+1、下载完成后，运行目录下的vs_setup.exe安装，不要运行vs_enterprise.exe
+2、定期运行下载命令进行更新
+
+VS帮助文件
+C:\ProgramData\Microsoft\HelpLibrary2
+
+VS安装包
+C:\ProgramData\Microsoft\VisualStudio
