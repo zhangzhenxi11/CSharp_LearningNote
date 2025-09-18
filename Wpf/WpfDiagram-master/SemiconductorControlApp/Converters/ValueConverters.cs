@@ -165,4 +165,24 @@ namespace SemiconductorControlApp
             throw new NotImplementedException();
         }
     }
+
+    /// <summary>
+    /// 条件节点可见性转换器
+    /// </summary>
+    public class ConditionVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is DeviceType deviceType)
+            {
+                return deviceType == DeviceType.Condition ? Visibility.Visible : Visibility.Collapsed;
+            }
+            return Visibility.Collapsed;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

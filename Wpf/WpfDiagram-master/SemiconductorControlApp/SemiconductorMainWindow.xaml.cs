@@ -2,6 +2,7 @@ using Aga.Diagrams;
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace SemiconductorControlApp
 {
@@ -11,6 +12,8 @@ namespace SemiconductorControlApp
     /// </summary>
     public partial class SemiconductorMainWindow : Window
     {
+        private Point _startPoint;
+        private bool _isDragging = false;
         private SemiconductorProcessController _processController;
 
         public SemiconductorMainWindow()
@@ -102,17 +105,51 @@ namespace SemiconductorControlApp
                     var deviceType = e.Data.GetData(DataFormats.StringFormat) as string;
                     var position = e.GetPosition(DiagramCanvas);
                     
-                    // 在指定位置添加设备
-                    var viewModel = DataContext as MainViewModel;
-                    viewModel?.AddDeviceCommand.Execute(deviceType);
-                    
-                    Console.WriteLine($"在位置 ({position.X}, {position.Y}) 添加设备: {deviceType}");
+                    // 通过控制器添加设备
+                    var device = _processController.AddDeviceAtPosition(deviceType, position.X, position.Y);
+                    if (device != null)
+                    {
+                        Console.WriteLine($"在位置 ({position.X}, {position.Y}) 添加设备: {deviceType}");
+                    }
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"拖放设备时发生错误: {ex.Message}");
                 MessageBox.Show($"添加设备失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void DeviceButton_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            _startPoint = e.GetPosition(null);
+            _isDragging = false;
+        }
+
+        private void DeviceButton_PreviewMouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed && !_isDragging)
+            {
+                Point mousePos = e.GetPosition(null);
+                Vector diff = _startPoint - mousePos;
+
+                if (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
+                    Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance)
+                {
+                    var button = sender as Button;
+                    if (button?.Tag is string deviceType)
+                    {
+                        _isDragging = true;
+                        
+                        // 创建拖放数据
+                        var dragData = new DataObject(DataFormats.StringFormat, deviceType);
+                        
+                        // 开始拖放操作
+                        DragDrop.DoDragDrop(button, dragData, DragDropEffects.Copy);
+                        
+                        _isDragging = false;
+                    }
+                }
             }
         }
 

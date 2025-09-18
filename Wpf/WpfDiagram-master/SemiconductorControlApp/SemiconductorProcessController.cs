@@ -198,6 +198,149 @@ namespace SemiconductorControlApp
 
         #endregion
 
+        #region 设备管理
+
+        /// <summary>
+        /// 在指定位置添加设备
+        /// </summary>
+        public SemiconductorDevice AddDeviceAtPosition(string deviceType, double x, double y)
+        {
+            try
+            {
+                if (!Enum.TryParse<DeviceType>(deviceType, out var type))
+                {
+                    Console.WriteLine($"无效的设备类型: {deviceType}");
+                    return null;
+                }
+
+                var deviceId = $"{deviceType.ToUpper()}{_devices.Count + 1:D2}";
+                var device = new SemiconductorDevice
+                {
+                    DeviceId = deviceId,
+                    DeviceName = GetDeviceDisplayName(type),
+                    DeviceType = type,
+                    Status = DeviceStatus.Idle,
+                    Unit = GetDefaultUnit(type),
+                    TargetValue = GetDefaultTargetValue(type),
+                    CurrentValue = 0,
+                    LastUpdateTime = DateTime.Now,
+                    ConditionExpression = type == DeviceType.Condition ? "Value > 50" : null
+                };
+
+                // 设置命令
+                device.StartCommand = new RelayCommand(() => ExecuteDeviceCommand("START", device));
+                device.StopCommand = new RelayCommand(() => ExecuteDeviceCommand("STOP", device));
+                device.ResetCommand = new RelayCommand(() => ExecuteDeviceCommand("RESET", device));
+                device.SetParameterCommand = new RelayCommand<double>(value => ExecuteSetParameter(device, value));
+
+                // 创建可视化节点
+                var node = new SemiconductorNode
+                {
+                    Device = device,  // 先设置Device属性触发端口创建
+                    Width = 120,
+                    Height = 80
+                };
+
+                // 设置节点位置
+                node.SetValue(System.Windows.Controls.Canvas.LeftProperty, x - 60);
+                node.SetValue(System.Windows.Controls.Canvas.TopProperty, y - 40);
+
+                // 添加到集合和视图
+                _devices.Add(device);
+                _diagramView.Children.Add(node);
+                
+                // 强制刷新端口设置（确保端口正确显示）
+                node.SetupPorts(device);
+                
+                Console.WriteLine($"添加设备: {device.DeviceName} [{device.DeviceId}] 在位置 ({x:F0}, {y:F0})，端口数量: {node.Ports.Count}");
+                
+                return device;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"创建设备失败: {ex.Message}");
+                return null;
+            }
+        }
+
+        private async void ExecuteDeviceCommand(string command, SemiconductorDevice device)
+        {
+            try
+            {
+                await DeviceControlService.ExecuteCommandAsync(device.DeviceId, command);
+                
+                // 更新设备状态
+                device.Status = command switch
+                {
+                    "START" => DeviceStatus.Running,
+                    "STOP" => DeviceStatus.Idle,
+                    "RESET" => DeviceStatus.Idle,
+                    _ => device.Status
+                };
+                
+                device.LastUpdateTime = DateTime.Now;
+                Console.WriteLine($"设备命令: {device.DeviceName} - {command}");
+            }
+            catch (Exception ex)
+            {
+                device.Status = DeviceStatus.Error;
+                Console.WriteLine($"设备命令失败: {device.DeviceName} - {command}: {ex.Message}");
+            }
+        }
+        
+        private async void ExecuteSetParameter(SemiconductorDevice device, double value)
+        {
+            try
+            {
+                await DeviceControlService.SetParameterAsync(device.DeviceId, value, device.Unit);
+                device.TargetValue = value;
+                device.LastUpdateTime = DateTime.Now;
+                Console.WriteLine($"参数设置: {device.DeviceName} = {value} {device.Unit}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"参数设置失败: {device.DeviceName}: {ex.Message}");
+            }
+        }
+
+        private string GetDeviceDisplayName(DeviceType type) => type switch
+        {
+            DeviceType.Pump => "泵",
+            DeviceType.Valve => "阀门",
+            DeviceType.Sensor => "传感器",
+            DeviceType.Heater => "加热器",
+            DeviceType.Chamber => "反应腔",
+            DeviceType.Controller => "控制器",
+            DeviceType.Condition => "条件节点",
+            _ => "未知设备"
+        };
+
+        private string GetDefaultUnit(DeviceType type) => type switch
+        {
+            DeviceType.Pump => "L/min",
+            DeviceType.Valve => "%",
+            DeviceType.Sensor => "°C",
+            DeviceType.Heater => "°C", 
+            DeviceType.Chamber => "Torr",
+            DeviceType.Controller => "",
+            DeviceType.Condition => "",
+            _ => ""
+        };
+
+        private double GetDefaultTargetValue(DeviceType type) => type switch
+        {
+            DeviceType.Pump => 10.0,
+            DeviceType.Valve => 50.0,
+            DeviceType.Sensor => 25.0,
+            DeviceType.Heater => 200.0,
+            DeviceType.Chamber => 0.1,
+            DeviceType.Controller => 0.0,
+            DeviceType.Condition => 0.0,
+            _ => 0.0
+        };
+
+        #endregion
+
         #region 配方和配置管理
 
         public async Task LoadRecipeAsync(string recipeName)

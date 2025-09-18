@@ -89,6 +89,18 @@
                             <Setter TargetName="NodeBorder" Property="BorderBrush" Value="#FF455A64"/>
                         </DataTrigger>
                         
+                        <!-- 条件节点菱形样式 -->
+                        <DataTrigger Binding="{Binding Device.DeviceType, RelativeSource={RelativeSource Self}}" Value="Condition">
+                            <Setter TargetName="NodeBorder" Property="Background" Value="#FFFF5722"/>
+                            <Setter TargetName="NodeBorder" Property="BorderBrush" Value="#FFD84315"/>
+                            <Setter TargetName="NodeBorder" Property="CornerRadius" Value="0"/>
+                            <Setter TargetName="NodeBorder" Property="RenderTransform">
+                                <Setter.Value>
+                                    <RotateTransform Angle="45" CenterX="60" CenterY="40"/>
+                                </Setter.Value>
+                            </Setter>
+                        </DataTrigger>
+                        
                         <!-- 设备状态样式 -->
                         <DataTrigger Binding="{Binding Device.Status, RelativeSource={RelativeSource Self}}" Value="Idle">
                             <Setter TargetName="StatusIndicator" Property="Fill" Value="Gray"/>

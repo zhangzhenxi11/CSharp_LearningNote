@@ -15,6 +15,9 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="SemiconductorStyles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+            
+            <!-- 添加转换器 -->
+            <local:ConditionVisibilityConverter x:Key="ConditionVisibilityConverter"/>
         </ResourceDictionary>
     </Window.Resources>
 
@@ -67,17 +70,33 @@
                     <StackPanel>
                         <!-- 设备类型按钮 -->
                         <Button Content="泵 (Pump)" Style="{StaticResource ProcessControlButtonStyle}"
-                                Click="AddDevice_Click" Tag="Pump" Margin="5"/>
+                                Click="AddDevice_Click" Tag="Pump" Margin="5"
+                                PreviewMouseLeftButtonDown="DeviceButton_PreviewMouseLeftButtonDown"
+                                PreviewMouseMove="DeviceButton_PreviewMouseMove"/>
                         <Button Content="阀门 (Valve)" Style="{StaticResource ProcessControlButtonStyle}"
-                                Click="AddDevice_Click" Tag="Valve" Margin="5"/>
+                                Click="AddDevice_Click" Tag="Valve" Margin="5"
+                                PreviewMouseLeftButtonDown="DeviceButton_PreviewMouseLeftButtonDown"
+                                PreviewMouseMove="DeviceButton_PreviewMouseMove"/>
                         <Button Content="传感器 (Sensor)" Style="{StaticResource ProcessControlButtonStyle}"
-                                Click="AddDevice_Click" Tag="Sensor" Margin="5"/>
+                                Click="AddDevice_Click" Tag="Sensor" Margin="5"
+                                PreviewMouseLeftButtonDown="DeviceButton_PreviewMouseLeftButtonDown"
+                                PreviewMouseMove="DeviceButton_PreviewMouseMove"/>
                         <Button Content="加热器 (Heater)" Style="{StaticResource ProcessControlButtonStyle}"
-                                Click="AddDevice_Click" Tag="Heater" Margin="5"/>
+                                Click="AddDevice_Click" Tag="Heater" Margin="5"
+                                PreviewMouseLeftButtonDown="DeviceButton_PreviewMouseLeftButtonDown"
+                                PreviewMouseMove="DeviceButton_PreviewMouseMove"/>
                         <Button Content="反应腔 (Chamber)" Style="{StaticResource ProcessControlButtonStyle}"
-                                Click="AddDevice_Click" Tag="Chamber" Margin="5"/>
+                                Click="AddDevice_Click" Tag="Chamber" Margin="5"
+                                PreviewMouseLeftButtonDown="DeviceButton_PreviewMouseLeftButtonDown"
+                                PreviewMouseMove="DeviceButton_PreviewMouseMove"/>
                         <Button Content="控制器 (Controller)" Style="{StaticResource ProcessControlButtonStyle}"
-                                Click="AddDevice_Click" Tag="Controller" Margin="5"/>
+                                Click="AddDevice_Click" Tag="Controller" Margin="5"
+                                PreviewMouseLeftButtonDown="DeviceButton_PreviewMouseLeftButtonDown"
+                                PreviewMouseMove="DeviceButton_PreviewMouseMove"/>
+                        <Button Content="条件 (Condition)" Style="{StaticResource ProcessControlButtonStyle}"
+                                Click="AddDevice_Click" Tag="Condition" Margin="5"
+                                PreviewMouseLeftButtonDown="DeviceButton_PreviewMouseLeftButtonDown"
+                                PreviewMouseMove="DeviceButton_PreviewMouseMove"/>
                         
                         <Separator Margin="5"/>
                         
@@ -122,9 +141,9 @@
 
             <!-- 图表画布 -->
             <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
-                         Background="#FF263238">
+                         Background="#FFF5F5F5">
                 <diag:DiagramView x:Name="DiagramCanvas"
-                                  Background="Transparent"
+                                  Background="#FFFFFFFF"
                                   ShowGrid="{Binding ShowGrid}"
                                   GridCellSize="20,20"
                                   DocumentSize="2000,1500"
@@ -161,6 +180,12 @@
                             
                             <TextBlock Text="单位:" Foreground="White" Margin="0,5"/>
                             <TextBox Text="{Binding Unit}" Style="{StaticResource ParameterInputStyle}"/>
+                            
+                            <!-- 条件表达式（仅条件节点显示） -->
+                            <TextBlock Text="条件表达式:" Foreground="White" Margin="0,5" 
+                                      Visibility="{Binding DeviceType, Converter={StaticResource ConditionVisibilityConverter}}"/>
+                            <TextBox Text="{Binding ConditionExpression}" Style="{StaticResource ParameterInputStyle}"
+                                    Visibility="{Binding DeviceType, Converter={StaticResource ConditionVisibilityConverter}}"/>
                             
                             <Button Content="应用设置" Style="{StaticResource ProcessControlButtonStyle}"
                                     Command="{Binding SetParameterCommand}" 

@@ -1,8 +1,10 @@
 using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
 using Aga.Diagrams.Controls;
 using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
@@ -19,7 +21,8 @@ namespace SemiconductorControlApp
         Sensor,         // 传感器
         Heater,         // 加热器
         Chamber,        // 反应腔
-        Controller      // 控制器
+        Controller,     // 控制器
+        Condition       // 条件节点
     }
 
     /// <summary>
@@ -46,6 +49,7 @@ namespace SemiconductorControlApp
         private double _targetValue;
         private string _unit;
         private DateTime _lastUpdateTime;
+        private string _conditionExpression; // 条件表达式（仅条件节点使用）
 
         public string DeviceId
         {
@@ -93,6 +97,15 @@ namespace SemiconductorControlApp
         {
             get => _lastUpdateTime;
             set { _lastUpdateTime = value; OnPropertyChanged(); }
+        }
+
+        /// <summary>
+        /// 条件表达式（仅条件节点使用）
+        /// </summary>
+        public string ConditionExpression
+        {
+            get => _conditionExpression;
+            set { _conditionExpression = value; OnPropertyChanged(); }
         }
 
         // 设备控制命令
@@ -158,7 +171,7 @@ namespace SemiconductorControlApp
                 ExecuteSetParameter(device, value));
         }
 
-        private void SetupPorts(SemiconductorDevice device)
+        public void SetupPorts(SemiconductorDevice device)
         {
             // 根据设备类型设置端口
             Ports.Clear();
@@ -190,6 +203,27 @@ namespace SemiconductorControlApp
                     AddPort("Control_In", VerticalAlignment.Top, HorizontalAlignment.Center, true, false);
                     AddPort("Status_Out", VerticalAlignment.Bottom, HorizontalAlignment.Center, false, true);
                     break;
+                    
+                case DeviceType.Heater:
+                    // 加热器：控制输入 + 状态输出
+                    AddPort("Control_In", VerticalAlignment.Top, HorizontalAlignment.Center, true, false);
+                    AddPort("Status_Out", VerticalAlignment.Bottom, HorizontalAlignment.Center, false, true);
+                    break;
+                    
+                case DeviceType.Controller:
+                    // 控制器：多个输入输出端口
+                    AddPort("Input_1", VerticalAlignment.Top, HorizontalAlignment.Left, true, false);
+                    AddPort("Input_2", VerticalAlignment.Top, HorizontalAlignment.Right, true, false);
+                    AddPort("Output_1", VerticalAlignment.Bottom, HorizontalAlignment.Left, false, true);
+                    AddPort("Output_2", VerticalAlignment.Bottom, HorizontalAlignment.Right, false, true);
+                    break;
+                    
+                case DeviceType.Condition:
+                    // 条件节点：上输入，下、左、右输出（菱形）
+                    AddPort("Input", VerticalAlignment.Top, HorizontalAlignment.Center, true, false);
+                    AddPort("True", VerticalAlignment.Bottom, HorizontalAlignment.Center, false, true);
+                    AddPort("False", VerticalAlignment.Center, HorizontalAlignment.Right, false, true);
+                    break;
             }
         }
 
@@ -199,18 +233,21 @@ namespace SemiconductorControlApp
             var port = new EllipsePort
             {
                 Name = portName,
-                Width = 12,
-                Height = 12,
-                Margin = new Thickness(-6),
+                Width = 10,
+                Height = 10,
+                Margin = new Thickness(-5),
                 VerticalAlignment = vAlign,
                 HorizontalAlignment = hAlign,
                 CanAcceptIncomingLinks = canAcceptIncoming,
                 CanAcceptOutgoingLinks = canAcceptOutgoing,
                 CanCreateLink = true,
-                Tag = portName
+                Tag = portName,
+                Visibility = Visibility.Visible,
+                Cursor = Cursors.Cross
             };
             
             Ports.Add(port);
+            Console.WriteLine($"添加端口: {portName} 到位置 {vAlign}, {hAlign}");
         }
 
         private async void ExecuteDeviceCommand(string command, SemiconductorDevice device)
