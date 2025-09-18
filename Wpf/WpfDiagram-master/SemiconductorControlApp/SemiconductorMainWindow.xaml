@@ -1,0 +1,268 @@
+<Window x:Class="SemiconductorControlApp.SemiconductorMainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:diag="clr-namespace:Aga.Diagrams;assembly=Aga.Diagrams"
+        xmlns:local="clr-namespace:SemiconductorControlApp"
+        mc:Ignorable="d"
+        Title="半导体设备流程控制系统" 
+        Height="800" Width="1200"
+        WindowState="Maximized">
+    
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="SemiconductorStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="300"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- 菜单栏 -->
+        <Menu Grid.Row="0" Grid.ColumnSpan="3" Background="#FF37474F">
+            <MenuItem Header="文件" Foreground="White">
+                <MenuItem Header="新建流程" Command="{Binding NewProcessCommand}"/>
+                <MenuItem Header="打开配方" Command="{Binding LoadRecipeCommand}"/>
+                <MenuItem Header="保存配置" Command="{Binding SaveConfigurationCommand}"/>
+                <Separator/>
+                <MenuItem Header="导出数据" Command="{Binding ExportDataCommand}"/>
+                <MenuItem Header="退出" Click="ExitMenuItem_Click"/>
+            </MenuItem>
+            <MenuItem Header="编辑" Foreground="White">
+                <MenuItem Header="撤销" Command="ApplicationCommands.Undo"/>
+                <MenuItem Header="重做" Command="ApplicationCommands.Redo"/>
+                <Separator/>
+                <MenuItem Header="删除" Command="ApplicationCommands.Delete"/>
+            </MenuItem>
+            <MenuItem Header="视图" Foreground="White">
+                <MenuItem Header="网格" IsCheckable="True" IsChecked="{Binding ShowGrid}"/>
+                <MenuItem Header="缩放到适合" Command="{Binding ZoomToFitCommand}"/>
+            </MenuItem>
+            <MenuItem Header="工具" Foreground="White">
+                <MenuItem Header="设备库" Click="DeviceLibraryMenuItem_Click"/>
+                <MenuItem Header="参数设置" Click="ParametersMenuItem_Click"/>
+                <MenuItem Header="数据监控" Click="DataMonitorMenuItem_Click"/>
+            </MenuItem>
+        </Menu>
+
+        <!-- 左侧工具栏 - 设备库 -->
+        <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource ProcessStatusPanelStyle}">
+            <DockPanel>
+                <TextBlock Text="设备库" FontSize="14" FontWeight="Bold" Foreground="White" 
+                          DockPanel.Dock="Top" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                
+                <ScrollViewer DockPanel.Dock="Top">
+                    <StackPanel>
+                        <!-- 设备类型按钮 -->
+                        <Button Content="泵 (Pump)" Style="{StaticResource ProcessControlButtonStyle}"
+                                Click="AddDevice_Click" Tag="Pump" Margin="5"/>
+                        <Button Content="阀门 (Valve)" Style="{StaticResource ProcessControlButtonStyle}"
+                                Click="AddDevice_Click" Tag="Valve" Margin="5"/>
+                        <Button Content="传感器 (Sensor)" Style="{StaticResource ProcessControlButtonStyle}"
+                                Click="AddDevice_Click" Tag="Sensor" Margin="5"/>
+                        <Button Content="加热器 (Heater)" Style="{StaticResource ProcessControlButtonStyle}"
+                                Click="AddDevice_Click" Tag="Heater" Margin="5"/>
+                        <Button Content="反应腔 (Chamber)" Style="{StaticResource ProcessControlButtonStyle}"
+                                Click="AddDevice_Click" Tag="Chamber" Margin="5"/>
+                        <Button Content="控制器 (Controller)" Style="{StaticResource ProcessControlButtonStyle}"
+                                Click="AddDevice_Click" Tag="Controller" Margin="5"/>
+                        
+                        <Separator Margin="5"/>
+                        
+                        <!-- 配方管理 -->
+                        <TextBlock Text="配方管理" FontWeight="Bold" Foreground="White" Margin="5"/>
+                        <ComboBox x:Name="RecipeComboBox" Margin="5"
+                                  ItemsSource="{Binding AvailableRecipes}"
+                                  SelectedItem="{Binding CurrentRecipe}"/>
+                        <Button Content="加载配方" Style="{StaticResource ProcessControlButtonStyle}"
+                                Command="{Binding LoadRecipeCommand}" 
+                                CommandParameter="{Binding SelectedItem, ElementName=RecipeComboBox}"
+                                Margin="5"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </DockPanel>
+        </Border>
+
+        <!-- 中央画布区域 -->
+        <Grid Grid.Row="1" Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- 工具栏 -->
+            <ToolBar Grid.Row="0" Background="#FF607D8B">
+                <Button Content="开始流程" Style="{StaticResource ProcessControlButtonStyle}"
+                        Command="{Binding StartProcessCommand}"/>
+                <Button Content="暂停流程" Style="{StaticResource ProcessControlButtonStyle}"
+                        Command="{Binding PauseProcessCommand}"/>
+                <Button Content="停止流程" Style="{StaticResource EmergencyStopButtonStyle}"
+                        Command="{Binding StopProcessCommand}"/>
+                <Separator/>
+                <TextBlock Text="状态:" VerticalAlignment="Center" Foreground="White" Margin="5,0"/>
+                <TextBlock Text="{Binding ProcessStatus, Converter={StaticResource ProcessStatusToStringConverter}}" 
+                          VerticalAlignment="Center" FontWeight="Bold" Foreground="Yellow" Margin="5,0"/>
+                <Separator/>
+                <TextBlock Text="运行时间:" VerticalAlignment="Center" Foreground="White" Margin="5,0"/>
+                <TextBlock Text="{Binding ProcessElapsedTime, StringFormat=hh\\:mm\\:ss}" 
+                          VerticalAlignment="Center" FontWeight="Bold" Foreground="LimeGreen" Margin="5,0"/>
+            </ToolBar>
+
+            <!-- 图表画布 -->
+            <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
+                         Background="#FF263238">
+                <diag:DiagramView x:Name="DiagramCanvas"
+                                  Background="Transparent"
+                                  ShowGrid="{Binding ShowGrid}"
+                                  GridCellSize="20,20"
+                                  DocumentSize="2000,1500"
+                                  Zoom="{Binding ZoomLevel}"
+                                  AllowDrop="True"
+                                  Drop="DiagramCanvas_Drop"/>
+            </ScrollViewer>
+        </Grid>
+
+        <!-- 右侧面板 - 属性和监控 -->
+        <Grid Grid.Row="1" Grid.Column="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- 设备属性面板 -->
+            <Border Grid.Row="0" Style="{StaticResource ProcessStatusPanelStyle}">
+                <DockPanel>
+                    <TextBlock Text="设备属性" FontSize="14" FontWeight="Bold" Foreground="White" 
+                              DockPanel.Dock="Top" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                    
+                    <ScrollViewer DockPanel.Dock="Top">
+                        <StackPanel DataContext="{Binding SelectedDevice}">
+                            <TextBlock Text="设备ID:" Foreground="White" Margin="0,5"/>
+                            <TextBox Text="{Binding DeviceId}" Style="{StaticResource ParameterInputStyle}"/>
+                            
+                            <TextBlock Text="设备名称:" Foreground="White" Margin="0,5"/>
+                            <TextBox Text="{Binding DeviceName}" Style="{StaticResource ParameterInputStyle}"/>
+                            
+                            <TextBlock Text="目标值:" Foreground="White" Margin="0,5"/>
+                            <TextBox Text="{Binding TargetValue}" Style="{StaticResource ParameterInputStyle}"/>
+                            
+                            <TextBlock Text="单位:" Foreground="White" Margin="0,5"/>
+                            <TextBox Text="{Binding Unit}" Style="{StaticResource ParameterInputStyle}"/>
+                            
+                            <Button Content="应用设置" Style="{StaticResource ProcessControlButtonStyle}"
+                                    Command="{Binding SetParameterCommand}" 
+                                    CommandParameter="{Binding TargetValue}"
+                                    Margin="0,10,0,0"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </DockPanel>
+            </Border>
+
+            <!-- 实时数据监控 -->
+            <Border Grid.Row="1" Style="{StaticResource ProcessStatusPanelStyle}">
+                <DockPanel>
+                    <TextBlock Text="实时监控" FontSize="14" FontWeight="Bold" Foreground="White" 
+                              DockPanel.Dock="Top" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                    
+                    <ScrollViewer DockPanel.Dock="Top">
+                        <ItemsControl ItemsSource="{Binding Devices}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="#FF455A64" BorderBrush="#FF607D8B" BorderThickness="1" 
+                                           CornerRadius="3" Margin="2" Padding="5">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="{Binding DeviceName}" FontWeight="Bold" 
+                                                          Foreground="White" FontSize="10"/>
+                                                <TextBlock FontSize="9" Foreground="LightGray">
+                                                    <Run Text="当前: "/>
+                                                    <Run Text="{Binding CurrentValue, StringFormat=F2}" FontWeight="Bold"/>
+                                                    <Run Text="{Binding Unit}"/>
+                                                </TextBlock>
+                                                <TextBlock Text="{Binding LastUpdateTime, StringFormat=HH:mm:ss}" 
+                                                          FontSize="8" Foreground="Gray"/>
+                                            </StackPanel>
+                                            
+                                            <Ellipse Grid.Column="1" Width="12" Height="12" Margin="5"
+                                                    Fill="{Binding Status, Converter={StaticResource StatusToColorConverter}}"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </DockPanel>
+            </Border>
+
+            <!-- 日志面板 -->
+            <Border Grid.Row="2" Style="{StaticResource ProcessStatusPanelStyle}">
+                <DockPanel>
+                    <TextBlock Text="系统日志" FontSize="14" FontWeight="Bold" Foreground="White" 
+                              DockPanel.Dock="Top" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                    
+                    <ScrollViewer DockPanel.Dock="Top" x:Name="LogScrollViewer">
+                        <TextBlock x:Name="LogTextBlock" FontFamily="Consolas" FontSize="10" 
+                                  Foreground="LimeGreen" Background="Black" Padding="5"
+                                  Text="{Binding SystemLogs}" TextWrapping="Wrap"/>
+                    </ScrollViewer>
+                </DockPanel>
+            </Border>
+        </Grid>
+
+        <!-- 状态栏 -->
+        <StatusBar Grid.Row="2" Grid.ColumnSpan="3" Background="#FF37474F">
+            <StatusBar.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                    </Grid>
+                </ItemsPanelTemplate>
+            </StatusBar.ItemsPanel>
+            
+            <StatusBarItem Grid.Column="0">
+                <TextBlock Text="{Binding StatusMessage}" Foreground="White"/>
+            </StatusBarItem>
+            
+            <StatusBarItem Grid.Column="1">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="连接设备: " Foreground="White"/>
+                    <TextBlock Text="{Binding ConnectedDeviceCount}" FontWeight="Bold" Foreground="LimeGreen"/>
+                </StackPanel>
+            </StatusBarItem>
+            
+            <StatusBarItem Grid.Column="2">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="活动连接: " Foreground="White"/>
+                    <TextBlock Text="{Binding ActiveConnectionCount}" FontWeight="Bold" Foreground="Yellow"/>
+                </StackPanel>
+            </StatusBarItem>
+            
+            <StatusBarItem Grid.Column="3">
+                <TextBlock Text="{Binding CurrentTime, StringFormat=yyyy-MM-dd HH:mm:ss}" Foreground="White"/>
+            </StatusBarItem>
+        </StatusBar>
+    </Grid>
+</Window>

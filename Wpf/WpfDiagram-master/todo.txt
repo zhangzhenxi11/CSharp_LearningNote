@@ -4,4 +4,9 @@ Examples:
 2.Shapes: add shape, add link	
 3.Article
 
-
+📖 阅读建议
+建议按以下顺序阅读文档：
+先看 README.md 了解项目概况
+读 项目架构分析.md 深入理解设计
+参考 架构图.md 可视化理解结构
+使用 文件索引.md 快速定位具体文件
