@@ -20,6 +20,10 @@ namespace SemiconductorControlApp
         {
             InitializeComponent();
             
+            // 初始化视图模型
+            var viewModel = new MainViewModel();
+            this.DataContext = viewModel;
+            
             // 设置图表控制器
             _processController = new SemiconductorProcessController(DiagramCanvas);
             DiagramCanvas.Controller = _processController;
@@ -85,6 +89,52 @@ namespace SemiconductorControlApp
         private void DataMonitorMenuItem_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show("数据监控功能正在开发中...", "功能提示", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        /// <summary>
+        /// 保存流程菜单点击事件
+        /// </summary>
+        private async void SaveProcessMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var result = await _processController.SaveProcessToFileAsync();
+                if (result)
+                {
+                    ShowInfo("流程保存成功！", "保存完成");
+                }
+                else
+                {
+                    ShowError("流程保存失败或已取消", "保存失败");
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowError($"保存流程时发生错误: {ex.Message}", "保存错误");
+            }
+        }
+
+        /// <summary>
+        /// 加载流程菜单点击事件
+        /// </summary>
+        private async void LoadProcessMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var result = await _processController.LoadProcessFromFileAsync();
+                if (result)
+                {
+                    ShowInfo("流程加载成功！", "加载完成");
+                }
+                else
+                {
+                    ShowError("流程加载失败或已取消", "加载失败");
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowError($"加载流程时发生错误: {ex.Message}", "加载错误");
+            }
         }
 
         private void AddDevice_Click(object sender, RoutedEventArgs e)
@@ -180,6 +230,14 @@ namespace SemiconductorControlApp
         {
             var result = MessageBox.Show(message, title, MessageBoxButton.YesNo, MessageBoxImage.Question);
             return result == MessageBoxResult.Yes;
+        }
+
+        /// <summary>
+        /// 获取流程控制器
+        /// </summary>
+        public SemiconductorProcessController GetProcessController()
+        {
+            return _processController;
         }
 
         #endregion

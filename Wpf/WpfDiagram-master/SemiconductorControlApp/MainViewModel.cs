@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Threading;
 using System.Linq;
+using System.Windows;
 
 namespace SemiconductorControlApp
 {
@@ -263,6 +264,8 @@ namespace SemiconductorControlApp
         public ICommand ZoomOutCommand { get; private set; }
         public ICommand ZoomToFitCommand { get; private set; }
         public ICommand NewProcessCommand { get; private set; }
+        public ICommand SaveProcessCommand { get; private set; }
+        public ICommand LoadProcessCommand { get; private set; }
 
         private void InitializeCommands()
         {
@@ -285,6 +288,8 @@ namespace SemiconductorControlApp
             ZoomOutCommand = new RelayCommand(() => ZoomLevel /= 1.2);
             ZoomToFitCommand = new RelayCommand(ZoomToFit);
             NewProcessCommand = new AsyncRelayCommand(NewProcessAsync);
+            SaveProcessCommand = new AsyncRelayCommand(SaveProcessAsync);
+            LoadProcessCommand = new AsyncRelayCommand(LoadProcessAsync);
         }
 
         #endregion
@@ -514,6 +519,72 @@ namespace SemiconductorControlApp
             CurrentRecipe = "新建流程";
             StatusMessage = "已创建新流程";
             AddLogMessage("创建新流程");
+        }
+
+        /// <summary>
+        /// 保存流程
+        /// </summary>
+        private async Task SaveProcessAsync()
+        {
+            try
+            {
+                // 获取主窗口的控制器
+                var mainWindow = Application.Current.MainWindow as SemiconductorMainWindow;
+                var controller = mainWindow?.GetProcessController();
+                
+                if (controller != null)
+                {
+                    var result = await controller.SaveProcessToFileAsync();
+                    if (result)
+                    {
+                        StatusMessage = "流程保存成功";
+                        AddLogMessage("流程保存成功");
+                    }
+                    else
+                    {
+                        StatusMessage = "流程保存失败";
+                        AddLogMessage("流程保存失败或已取消");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"保存失败: {ex.Message}";
+                AddLogMessage($"保存错误: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 加载流程
+        /// </summary>
+        private async Task LoadProcessAsync()
+        {
+            try
+            {
+                // 获取主窗口的控制器
+                var mainWindow = Application.Current.MainWindow as SemiconductorMainWindow;
+                var controller = mainWindow?.GetProcessController();
+                
+                if (controller != null)
+                {
+                    var result = await controller.LoadProcessFromFileAsync();
+                    if (result)
+                    {
+                        StatusMessage = "流程加载成功";
+                        AddLogMessage("流程加载成功");
+                    }
+                    else
+                    {
+                        StatusMessage = "流程加载失败";
+                        AddLogMessage("流程加载失败或已取消");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"加载失败: {ex.Message}";
+                AddLogMessage($"加载错误: {ex.Message}");
+            }
         }
 
         private void AddDevice(string deviceType)

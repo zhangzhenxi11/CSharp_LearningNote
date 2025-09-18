@@ -1,0 +1,67 @@
+﻿{
+  "SaveTime": "2025-09-18T18:02:58.8114172+08:00",
+  "ProcessName": "示例配方",
+  "Devices": [
+    {
+      "DeviceId": "PUMP02",
+      "DeviceName": "泵",
+      "DeviceType": 0,
+      "Unit": "L/min",
+      "TargetValue": 10,
+      "ConditionExpression": null,
+      "X": 382.4000000000001,
+      "Y": 79.32000000000001
+    },
+    {
+      "DeviceId": "VALVE03",
+      "DeviceName": "阀门",
+      "DeviceType": 1,
+      "Unit": "%",
+      "TargetValue": 50,
+      "ConditionExpression": null,
+      "X": 383.20000000000016,
+      "Y": 235.31999999999994
+    },
+    {
+      "DeviceId": "SENSOR04",
+      "DeviceName": "传感器",
+      "DeviceType": 2,
+      "Unit": "°C",
+      "TargetValue": 25,
+      "ConditionExpression": null,
+      "X": 128,
+      "Y": 121.72000000000003
+    },
+    {
+      "DeviceId": "HEATER05",
+      "DeviceName": "加热器",
+      "DeviceType": 3,
+      "Unit": "°C",
+      "TargetValue": 200,
+      "ConditionExpression": null,
+      "X": 704.8000000000001,
+      "Y": 284.11999999999995
+    },
+    {
+      "DeviceId": "CHAMBER06",
+      "DeviceName": "反应腔",
+      "DeviceType": 4,
+      "Unit": "Torr",
+      "TargetValue": 0.1,
+      "ConditionExpression": null,
+      "X": 120.00000000000006,
+      "Y": 296.91999999999996
+    },
+    {
+      "DeviceId": "CONDITION08",
+      "DeviceName": "条件节点",
+      "DeviceType": 6,
+      "Unit": "",
+      "TargetValue": 0,
+      "ConditionExpression": "Value > 50",
+      "X": 150.39999999999998,
+      "Y": 497.71999999999997
+    }
+  ],
+  "Connections": []
+}

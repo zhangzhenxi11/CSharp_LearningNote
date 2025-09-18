@@ -6,6 +6,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Controls;
+using System.Windows.Media;
 using Aga.Diagrams;
 using Aga.Diagrams.Controls;
 
@@ -31,8 +33,48 @@ namespace SemiconductorControlApp
             _devices = new ObservableCollection<SemiconductorDevice>();
             _connections = new ObservableCollection<ProcessConnection>();
             
+            // 订阅选择变化事件 - 使用PropertyChanged事件
+            _diagramView.Selection.PropertyChanged += Selection_PropertyChanged;
+            
             InitializeCommands();
             StartStatusUpdateTimer();
+        }
+
+        /// <summary>
+        /// 选择变化事件处理 - 实现设备选择与属性关联
+        /// </summary>
+        private void Selection_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            try
+            {
+                // 获取主窗口的ViewModel
+                var mainWindow = Application.Current.MainWindow as SemiconductorMainWindow;
+                var viewModel = mainWindow?.DataContext as MainViewModel;
+                
+                if (viewModel == null) return;
+
+                // 获取主选择项
+                SemiconductorDevice selectedDevice = null;
+                
+                var primaryItem = _diagramView.Selection.Primary;
+                if (primaryItem is Node node && node.ModelElement is SemiconductorDevice device)
+                {
+                    selectedDevice = device;
+                    Console.WriteLine($"选中设备: {device.DeviceName} [{device.DeviceId}]");
+                }
+                
+                // 更新ViewModel的选中设备
+                viewModel.SelectedDevice = selectedDevice;
+                
+                if (selectedDevice != null)
+                {
+                    Console.WriteLine($"属性关联: 设备名称={selectedDevice.DeviceName}, 目标值={selectedDevice.TargetValue}, 单位={selectedDevice.Unit}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"选择事件处理失败: {ex.Message}");
+            }
         }
 
         #region 属性
@@ -233,13 +275,19 @@ namespace SemiconductorControlApp
                 device.ResetCommand = new RelayCommand(() => ExecuteDeviceCommand("RESET", device));
                 device.SetParameterCommand = new RelayCommand<double>(value => ExecuteSetParameter(device, value));
 
-                // 创建可视化节点
-                var node = new SemiconductorNode
+                // 创建可视化节点（使用原生Node类）
+                var node = new Node
                 {
-                    Device = device,  // 先设置Device属性触发端口创建
+                    ModelElement = device,
                     Width = 120,
                     Height = 80
                 };
+
+                // 创建端口（按照TestApp模式）
+                CreatePorts(device, node);
+                
+                // 设置节点内容
+                node.Content = CreateContent(device);
 
                 // 设置节点位置
                 node.SetValue(System.Windows.Controls.Canvas.LeftProperty, x - 60);
@@ -248,9 +296,6 @@ namespace SemiconductorControlApp
                 // 添加到集合和视图
                 _devices.Add(device);
                 _diagramView.Children.Add(node);
-                
-                // 强制刷新端口设置（确保端口正确显示）
-                node.SetupPorts(device);
                 
                 Console.WriteLine($"添加设备: {device.DeviceName} [{device.DeviceId}] 在位置 ({x:F0}, {y:F0})，端口数量: {node.Ports.Count}");
                 
@@ -340,6 +385,73 @@ namespace SemiconductorControlApp
         };
 
         #endregion
+
+        /// <summary>
+        /// 创建端口（按照TestApp模式）
+        /// </summary>
+        private void CreatePorts(SemiconductorDevice device, Node item)
+        {
+            foreach (var portDef in device.GetPorts())
+            {
+                var port = new Aga.Diagrams.Controls.EllipsePort
+                {
+                    Width = 10,
+                    Height = 10,
+                    Margin = new Thickness(-5),
+                    Visibility = Visibility.Visible,
+                    VerticalAlignment = portDef.VerticalAlignment,
+                    HorizontalAlignment = portDef.HorizontalAlignment,
+                    CanAcceptIncomingLinks = portDef.CanAcceptIncoming,
+                    CanAcceptOutgoingLinks = portDef.CanAcceptOutgoing,
+                    Tag = portDef.Name,
+                    Cursor = Cursors.Cross,
+                    CanCreateLink = true
+                };
+                item.Ports.Add(port);
+                Console.WriteLine($"添加端口: {portDef.Name} 到位置 {portDef.VerticalAlignment}, {portDef.HorizontalAlignment}");
+            }
+        }
+
+        /// <summary>
+        /// 创建节点内容
+        /// </summary>
+        private FrameworkElement CreateContent(SemiconductorDevice device)
+        {
+            var textBlock = new TextBlock
+            {
+                Text = device.DeviceName,
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                TextAlignment = TextAlignment.Center,
+                Foreground = Brushes.Black
+            };
+
+            var border = new Border
+            {
+                BorderBrush = Brushes.Black,
+                BorderThickness = new Thickness(1),
+                Background = GetDeviceColor(device.DeviceType),
+                Child = textBlock,
+                CornerRadius = new CornerRadius(5)
+            };
+
+            return border;
+        }
+
+        /// <summary>
+        /// 根据设备类型获取颜色
+        /// </summary>
+        private Brush GetDeviceColor(DeviceType deviceType) => deviceType switch
+        {
+            DeviceType.Pump => Brushes.LightBlue,
+            DeviceType.Valve => Brushes.LightGreen,
+            DeviceType.Sensor => Brushes.LightYellow,
+            DeviceType.Heater => Brushes.LightCoral,
+            DeviceType.Chamber => Brushes.LightGray,
+            DeviceType.Controller => Brushes.LightCyan,
+            DeviceType.Condition => Brushes.LightPink,
+            _ => Brushes.White
+        };
 
         #region 配方和配置管理
 
@@ -538,14 +650,48 @@ namespace SemiconductorControlApp
             if (command == ApplicationCommands.Delete && _diagramView.Selection.Count > 0)
             {
                 // 删除选中的设备或连接
+                var itemsToRemove = new List<DiagramItem>();
+                
                 foreach (var item in _diagramView.Selection.ToList())
                 {
-                    if (item is SemiconductorNode node)
+                    if (item is Node node && node.ModelElement is SemiconductorDevice device)
                     {
-                        _devices.Remove(node.Device);
-                        _diagramView.Children.Remove(node);
+                        // 移除相关连接
+                        var relatedConnections = _connections
+                            .Where(c => c.SourceDevice == device || c.TargetDevice == device)
+                            .ToList();
+                        
+                        foreach (var connection in relatedConnections)
+                        {
+                            _connections.Remove(connection);
+                        }
+                        
+                        // 移除设备
+                        _devices.Remove(device);
+                        itemsToRemove.Add(item);
+                        
+                        Console.WriteLine($"删除设备: {device.DeviceName} [{device.DeviceId}]");
+                    }
+                    else if (item is LinkBase link)
+                    {
+                        // 删除连接线
+                        if (link.ModelElement is ProcessConnection connection)
+                        {
+                            _connections.Remove(connection);
+                        }
+                        itemsToRemove.Add(item);
+                        Console.WriteLine("删除连接线");
                     }
                 }
+                
+                // 从视图中移除项目
+                foreach (var item in itemsToRemove)
+                {
+                    _diagramView.Children.Remove(item);
+                }
+                
+                // 清空选择
+                _diagramView.Selection.Clear();
             }
         }
 
@@ -555,6 +701,280 @@ namespace SemiconductorControlApp
                 return _diagramView.Selection.Count > 0 && ProcessStatus == ProcessStatus.Stopped;
             
             return false;
+        }
+
+        #endregion
+
+        #region 流程保存和加载功能
+
+        /// <summary>
+        /// 保存当前流程到文件
+        /// </summary>
+        public async Task<bool> SaveProcessToFileAsync(string filePath = null)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(filePath))
+                {
+                    var saveDialog = new Microsoft.Win32.SaveFileDialog
+                    {
+                        Title = "保存流程文件",
+                        Filter = "流程文件 (*.proc)|*.proc|所有文件 (*.*)|*.*",
+                        DefaultExt = ".proc",
+                        FileName = $"Process_{DateTime.Now:yyyyMMdd_HHmmss}.proc"
+                    };
+                    
+                    if (saveDialog.ShowDialog() != true)
+                        return false;
+                        
+                    filePath = saveDialog.FileName;
+                }
+
+                // 准备保存数据
+                var processData = new ProcessSaveData
+                {
+                    SaveTime = DateTime.Now,
+                    ProcessName = GetMainViewModel()?.CurrentRecipe ?? "UnnamedProcess",
+                    Devices = new List<DeviceSaveData>(),
+                    Connections = new List<ConnectionSaveData>()
+                };
+
+                // 保存设备数据和位置
+                foreach (var device in _devices)
+                {
+                    // 查找对应的节点以获取位置
+                    var node = _diagramView.Children.OfType<Node>()
+                        .FirstOrDefault(n => n.ModelElement == device);
+                    
+                    var deviceData = new DeviceSaveData
+                    {
+                        DeviceId = device.DeviceId,
+                        DeviceName = device.DeviceName,
+                        DeviceType = device.DeviceType,
+                        Unit = device.Unit,
+                        TargetValue = device.TargetValue,
+                        ConditionExpression = device.ConditionExpression,
+                        X = node != null ? (double)(node.GetValue(Canvas.LeftProperty) ?? 0) : 0,
+                        Y = node != null ? (double)(node.GetValue(Canvas.TopProperty) ?? 0) : 0
+                    };
+                    
+                    processData.Devices.Add(deviceData);
+                }
+
+                // 保存连接数据
+                foreach (var connection in _connections)
+                {
+                    var connectionData = new ConnectionSaveData
+                    {
+                        ConnectionId = connection.ConnectionId,
+                        SourceDeviceId = connection.SourceDevice?.DeviceId,
+                        TargetDeviceId = connection.TargetDevice?.DeviceId,
+                        SourcePort = connection.SourcePort,
+                        TargetPort = connection.TargetPort,
+                        IsActive = connection.IsActive
+                    };
+                    
+                    processData.Connections.Add(connectionData);
+                }
+
+                // 序列化为JSON
+                var json = System.Text.Json.JsonSerializer.Serialize(processData, new System.Text.Json.JsonSerializerOptions
+                {
+                    WriteIndented = true,
+                    Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+                });
+
+                // 写入文件
+                await System.IO.File.WriteAllTextAsync(filePath, json, System.Text.Encoding.UTF8);
+                
+                Console.WriteLine($"流程已保存到: {filePath}");
+                Console.WriteLine($"保存数据: {processData.Devices.Count}个设备, {processData.Connections.Count}个连接");
+                
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"保存流程失败: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 从文件加载流程
+        /// </summary>
+        public async Task<bool> LoadProcessFromFileAsync(string filePath = null)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(filePath))
+                {
+                    var openDialog = new Microsoft.Win32.OpenFileDialog
+                    {
+                        Title = "打开流程文件",
+                        Filter = "流程文件 (*.proc)|*.proc|所有文件 (*.*)|*.*",
+                        DefaultExt = ".proc"
+                    };
+                    
+                    if (openDialog.ShowDialog() != true)
+                        return false;
+                        
+                    filePath = openDialog.FileName;
+                }
+
+                if (!System.IO.File.Exists(filePath))
+                {
+                    Console.WriteLine($"文件不存在: {filePath}");
+                    return false;
+                }
+
+                // 读取文件
+                var json = await System.IO.File.ReadAllTextAsync(filePath, System.Text.Encoding.UTF8);
+                
+                // 反序列化
+                var processData = System.Text.Json.JsonSerializer.Deserialize<ProcessSaveData>(json);
+                
+                if (processData == null)
+                {
+                    Console.WriteLine("文件格式错误");
+                    return false;
+                }
+
+                // 清空当前数据
+                await ClearCurrentProcessAsync();
+
+                // 重建设备
+                foreach (var deviceData in processData.Devices)
+                {
+                    var device = new SemiconductorDevice
+                    {
+                        DeviceId = deviceData.DeviceId,
+                        DeviceName = deviceData.DeviceName,
+                        DeviceType = deviceData.DeviceType,
+                        Status = DeviceStatus.Idle,
+                        Unit = deviceData.Unit,
+                        TargetValue = deviceData.TargetValue,
+                        CurrentValue = 0,
+                        LastUpdateTime = DateTime.Now,
+                        ConditionExpression = deviceData.ConditionExpression
+                    };
+
+                    // 设置命令
+                    device.StartCommand = new RelayCommand(() => ExecuteDeviceCommand("START", device));
+                    device.StopCommand = new RelayCommand(() => ExecuteDeviceCommand("STOP", device));
+                    device.ResetCommand = new RelayCommand(() => ExecuteDeviceCommand("RESET", device));
+                    device.SetParameterCommand = new RelayCommand<double>(value => ExecuteSetParameter(device, value));
+
+                    // 创建可视化节点
+                    var node = new Node
+                    {
+                        ModelElement = device,
+                        Width = 120,
+                        Height = 80
+                    };
+
+                    // 创建端口
+                    CreatePorts(device, node);
+                    
+                    // 设置节点内容
+                    node.Content = CreateContent(device);
+
+                    // 设置节点位置
+                    node.SetValue(Canvas.LeftProperty, deviceData.X);
+                    node.SetValue(Canvas.TopProperty, deviceData.Y);
+
+                    // 添加到集合和视图
+                    _devices.Add(device);
+                    _diagramView.Children.Add(node);
+                }
+
+                // 重建连接
+                foreach (var connectionData in processData.Connections)
+                {
+                    var sourceDevice = _devices.FirstOrDefault(d => d.DeviceId == connectionData.SourceDeviceId);
+                    var targetDevice = _devices.FirstOrDefault(d => d.DeviceId == connectionData.TargetDeviceId);
+                    
+                    if (sourceDevice != null && targetDevice != null)
+                    {
+                        var connection = new ProcessConnection
+                        {
+                            ConnectionId = connectionData.ConnectionId,
+                            SourceDevice = sourceDevice,
+                            TargetDevice = targetDevice,
+                            SourcePort = connectionData.SourcePort,
+                            TargetPort = connectionData.TargetPort,
+                            IsActive = connectionData.IsActive
+                        };
+                        
+                        _connections.Add(connection);
+                        
+                        // TODO: 重建视觉连接线
+                        // 这里需要根据实际的端口位置创建 Link
+                    }
+                }
+
+                // 更新主视图模型
+                var viewModel = GetMainViewModel();
+                if (viewModel != null)
+                {
+                    viewModel.CurrentRecipe = processData.ProcessName;
+                    // 同步设备列表
+                    viewModel.Devices.Clear();
+                    foreach (var device in _devices)
+                    {
+                        viewModel.Devices.Add(device);
+                    }
+                }
+                
+                Console.WriteLine($"流程已加载从: {filePath}");
+                Console.WriteLine($"加载数据: {processData.Devices.Count}个设备, {processData.Connections.Count}个连接");
+                
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"加载流程失败: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 清空当前流程
+        /// </summary>
+        private async Task ClearCurrentProcessAsync()
+        {
+            try
+            {
+                // 停止流程
+                if (ProcessStatus == ProcessStatus.Running)
+                {
+                    await StopProcessAsync();
+                }
+
+                // 清空视图
+                _diagramView.Children.Clear();
+                
+                // 清空数据
+                _devices.Clear();
+                _connections.Clear();
+                
+                // 清空选择
+                _diagramView.Selection.Clear();
+                
+                Console.WriteLine("当前流程已清空");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"清空流程失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 获取主视图模型
+        /// </summary>
+        private MainViewModel GetMainViewModel()
+        {
+            var mainWindow = Application.Current.MainWindow as SemiconductorMainWindow;
+            return mainWindow?.DataContext as MainViewModel;
         }
 
         #endregion

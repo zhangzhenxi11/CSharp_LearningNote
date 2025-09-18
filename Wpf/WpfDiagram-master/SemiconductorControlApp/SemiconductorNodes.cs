@@ -12,6 +12,27 @@ using System.Runtime.CompilerServices;
 namespace SemiconductorControlApp
 {
     /// <summary>
+    /// 端口定义类
+    /// </summary>
+    public class PortDefinition
+    {
+        public string Name { get; }
+        public VerticalAlignment VerticalAlignment { get; }
+        public HorizontalAlignment HorizontalAlignment { get; }
+        public bool CanAcceptIncoming { get; }
+        public bool CanAcceptOutgoing { get; }
+
+        public PortDefinition(string name, VerticalAlignment vAlign, HorizontalAlignment hAlign, 
+            bool canAcceptIncoming, bool canAcceptOutgoing)
+        {
+            Name = name;
+            VerticalAlignment = vAlign;
+            HorizontalAlignment = hAlign;
+            CanAcceptIncoming = canAcceptIncoming;
+            CanAcceptOutgoing = canAcceptOutgoing;
+        }
+    }
+    /// <summary>
     /// 半导体设备节点枚举
     /// </summary>
     public enum DeviceType
@@ -106,6 +127,55 @@ namespace SemiconductorControlApp
         {
             get => _conditionExpression;
             set { _conditionExpression = value; OnPropertyChanged(); }
+        }
+
+        /// <summary>
+        /// 根据设备类型获取端口定义
+        /// </summary>
+        public IEnumerable<PortDefinition> GetPorts()
+        {
+            switch (DeviceType)
+            {
+                case DeviceType.Pump:
+                    yield return new PortDefinition("Control_In", VerticalAlignment.Top, HorizontalAlignment.Center, true, false);
+                    yield return new PortDefinition("Flow_Out", VerticalAlignment.Bottom, HorizontalAlignment.Center, false, true);
+                    break;
+                    
+                case DeviceType.Valve:
+                    yield return new PortDefinition("Control_In", VerticalAlignment.Top, HorizontalAlignment.Center, true, false);
+                    yield return new PortDefinition("Fluid_In", VerticalAlignment.Center, HorizontalAlignment.Left, true, false);
+                    yield return new PortDefinition("Fluid_Out", VerticalAlignment.Center, HorizontalAlignment.Right, false, true);
+                    break;
+                    
+                case DeviceType.Sensor:
+                    yield return new PortDefinition("Data_Out", VerticalAlignment.Bottom, HorizontalAlignment.Center, false, true);
+                    break;
+                    
+                case DeviceType.Chamber:
+                    yield return new PortDefinition("Gas_In", VerticalAlignment.Top, HorizontalAlignment.Left, true, false);
+                    yield return new PortDefinition("Gas_Out", VerticalAlignment.Top, HorizontalAlignment.Right, false, true);
+                    yield return new PortDefinition("Control_In", VerticalAlignment.Top, HorizontalAlignment.Center, true, false);
+                    yield return new PortDefinition("Status_Out", VerticalAlignment.Bottom, HorizontalAlignment.Center, false, true);
+                    break;
+                    
+                case DeviceType.Heater:
+                    yield return new PortDefinition("Control_In", VerticalAlignment.Top, HorizontalAlignment.Center, true, false);
+                    yield return new PortDefinition("Status_Out", VerticalAlignment.Bottom, HorizontalAlignment.Center, false, true);
+                    break;
+                    
+                case DeviceType.Controller:
+                    yield return new PortDefinition("Input_1", VerticalAlignment.Top, HorizontalAlignment.Left, true, false);
+                    yield return new PortDefinition("Input_2", VerticalAlignment.Top, HorizontalAlignment.Right, true, false);
+                    yield return new PortDefinition("Output_1", VerticalAlignment.Bottom, HorizontalAlignment.Left, false, true);
+                    yield return new PortDefinition("Output_2", VerticalAlignment.Bottom, HorizontalAlignment.Right, false, true);
+                    break;
+                    
+                case DeviceType.Condition:
+                    yield return new PortDefinition("Input", VerticalAlignment.Top, HorizontalAlignment.Center, true, false);
+                    yield return new PortDefinition("True", VerticalAlignment.Bottom, HorizontalAlignment.Center, false, true);
+                    yield return new PortDefinition("False", VerticalAlignment.Center, HorizontalAlignment.Right, false, true);
+                    break;
+            }
         }
 
         // 设备控制命令
