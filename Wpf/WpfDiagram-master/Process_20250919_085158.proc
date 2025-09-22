@@ -1,0 +1,47 @@
+﻿{
+  "SaveTime": "2025-09-19T08:52:01.6903302+08:00",
+  "ProcessName": "示例配方",
+  "Devices": [
+    {
+      "DeviceId": "PUMP01",
+      "DeviceName": "泵",
+      "DeviceType": 0,
+      "Unit": "L/min",
+      "TargetValue": 10,
+      "ConditionExpression": null,
+      "X": 244.79999999999995,
+      "Y": 63.32000000000001
+    },
+    {
+      "DeviceId": "CONDITION04",
+      "DeviceName": "条件节点",
+      "DeviceType": 6,
+      "Unit": "pa",
+      "TargetValue": 100,
+      "ConditionExpression": "Vacuum_value > 50",
+      "X": 244.7999999999999,
+      "Y": 183.32
+    },
+    {
+      "DeviceId": "CHAMBER03",
+      "DeviceName": "反应腔",
+      "DeviceType": 4,
+      "Unit": "Torr",
+      "TargetValue": 0.1,
+      "ConditionExpression": null,
+      "X": 244,
+      "Y": 311.3200000000001
+    },
+    {
+      "DeviceId": "VALVE04",
+      "DeviceName": "阀门",
+      "DeviceType": 1,
+      "Unit": "%",
+      "TargetValue": 50,
+      "ConditionExpression": null,
+      "X": 246.40000000000003,
+      "Y": 421.72
+    }
+  ],
+  "Connections": []
+}

@@ -9,7 +9,7 @@ namespace delegate_example
         {
             //两个c#委托，Action、Func
             Calcuator calcuator = new Calcuator();
-            Action action = new Action(calcuator.Report );
+            Action action = new Action(calcuator.Report);
             calcuator.Report();
             action.Invoke();
             action();

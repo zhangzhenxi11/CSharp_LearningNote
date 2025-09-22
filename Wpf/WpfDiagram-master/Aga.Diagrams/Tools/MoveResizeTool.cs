@@ -12,11 +12,33 @@ using Aga.Diagrams.Adorners;
 namespace Aga.Diagrams.Tools
 {
 	/// <summary>
-	/// MoveResizeTool.cs - 移动和调整大小工具
-	/// 实现IMoveResizeTool接口，处理元素的移动和尺寸调整
-	/// 支持网格对齐、多选拖拽、边界限制等功能
-	/// 根据DragThumbKinds区分移动和调整大小操作
-	/// 提供操作验证和状态恢复功能
+	/// 移动和调整大小工具 - 实现图表元素的位置和尺寸调整功能
+	/// 
+	/// 【设计模式】：策略模式 + 状态模式 + 命令模式
+	/// 【核心功能】：
+	/// 1. 元素移动：支持单个和多个元素的同时移动
+	/// 2. 尺寸调整：支持八个方向的尺寸拖拽调整
+	/// 3. 网格对齐：可配置的网格吸附功能
+	/// 4. 边界限制：防止元素调整为负值或过小尺寸
+	/// 5. 撤销支持：保存初始状态支持撤销操作
+	/// 6. 视觉反馈：提供对应的鼠标指针样式
+	/// 
+	/// 【操作类型分类】：
+	/// - Center：中心移动，支持多选操作
+	/// - Left/Right/Top/Bottom：单方向尺寸调整
+	/// - TopLeft/TopRight/BottomLeft/BottomRight：角部双方向调整
+	/// 
+	/// 【技术特点】：
+	/// - 使用位标运算区分不同拖拽类型
+	/// - LINQ查询过滤可操作元素
+	/// - Math.Max/Min限制尺寸边界
+	/// - Canvas布局系统的直接操作
+	/// 
+	/// 【学习要点】：
+	/// - 位运算：& | 运算符在枚举标志中的应用
+	/// - Canvas布局：SetLeft/SetTop附加属性的使用
+	/// - LINQ投影：Select方法的高级应用
+	/// - 数组同步：多个数组的索引同步操作
 	/// </summary>
 	public class MoveResizeTool : IMoveResizeTool
 	{

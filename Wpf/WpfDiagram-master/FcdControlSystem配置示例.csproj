@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>FcdControlSystem</AssemblyName>
+    <RootNamespace>FcdControlSystem</RootNamespace>
+    <!-- 关键配置：禁用自动生成 AssemblyInfo 以避免特性重复 -->
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <!-- 项目引用：引用 Aga.Diagrams 库 -->
+  <ItemGroup>
+    <ProjectReference Include="Aga.Diagrams\Aga.Diagrams.csproj" />
+  </ItemGroup>
+
+</Project>

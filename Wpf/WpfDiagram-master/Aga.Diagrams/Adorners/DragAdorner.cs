@@ -14,10 +14,12 @@ namespace Aga.Diagrams.Adorners
 	/// 继承自WPF的Adorner类，用于在拖拽过程中显示临时的视觉效果
 	/// 提供拖拽开始、进行中、结束的完整生命周期管理
 	/// </summary>
+
+
 	public abstract class DragAdorner: Adorner
 	{
-		public DiagramView View { get; private set; }
-		protected bool DoCommit { get; set; }
+		public DiagramView View { get; private set; } //画布控件属性
+        protected bool DoCommit { get; set; }
 		private bool CanDrop { get; set; }
 		protected Point Start { get; set; }
 		protected Point End { get; set; }
@@ -26,8 +28,8 @@ namespace Aga.Diagrams.Adorners
 		{
 			View = view;
 			End = Start = start;
-			this.Loaded += OnLoaded;
-		}
+			this.Loaded += OnLoaded; //public event RoutedEventHandler Loaded; 路由事件 += 事件处理器
+        }
 
 		private void OnLoaded(object sender, RoutedEventArgs e)
 		{
