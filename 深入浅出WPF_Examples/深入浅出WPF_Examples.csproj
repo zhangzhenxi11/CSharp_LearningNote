@@ -1,0 +1,58 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="WpfApp1\**" />
+    <Compile Remove="WpfApp2\**" />
+    <Compile Remove="WpfApp_Binding_no_path\**" />
+    <Compile Remove="WpfApp_Binding指定源方法\**" />
+    <Compile Remove="WpfApp_bing\**" />
+    <Compile Remove="WpfApp_Bing源与路径\**" />
+    <Compile Remove="WpfApp_为对象属性赋值\**" />
+    <Compile Remove="WpfApp_事件处理器\**" />
+    <Compile Remove="WpfApp_属性标签\**" />
+    <Compile Remove="WpfApp_标签扩展\**" />
+    <Compile Remove="WpfApp_集合对象作为列表控件的ItemSource\**" />
+    <EmbeddedResource Remove="WpfApp1\**" />
+    <EmbeddedResource Remove="WpfApp2\**" />
+    <EmbeddedResource Remove="WpfApp_Binding_no_path\**" />
+    <EmbeddedResource Remove="WpfApp_Binding指定源方法\**" />
+    <EmbeddedResource Remove="WpfApp_bing\**" />
+    <EmbeddedResource Remove="WpfApp_Bing源与路径\**" />
+    <EmbeddedResource Remove="WpfApp_为对象属性赋值\**" />
+    <EmbeddedResource Remove="WpfApp_事件处理器\**" />
+    <EmbeddedResource Remove="WpfApp_属性标签\**" />
+    <EmbeddedResource Remove="WpfApp_标签扩展\**" />
+    <EmbeddedResource Remove="WpfApp_集合对象作为列表控件的ItemSource\**" />
+    <None Remove="WpfApp1\**" />
+    <None Remove="WpfApp2\**" />
+    <None Remove="WpfApp_Binding_no_path\**" />
+    <None Remove="WpfApp_Binding指定源方法\**" />
+    <None Remove="WpfApp_bing\**" />
+    <None Remove="WpfApp_Bing源与路径\**" />
+    <None Remove="WpfApp_为对象属性赋值\**" />
+    <None Remove="WpfApp_事件处理器\**" />
+    <None Remove="WpfApp_属性标签\**" />
+    <None Remove="WpfApp_标签扩展\**" />
+    <None Remove="WpfApp_集合对象作为列表控件的ItemSource\**" />
+    <Page Remove="WpfApp1\**" />
+    <Page Remove="WpfApp2\**" />
+    <Page Remove="WpfApp_Binding_no_path\**" />
+    <Page Remove="WpfApp_Binding指定源方法\**" />
+    <Page Remove="WpfApp_bing\**" />
+    <Page Remove="WpfApp_Bing源与路径\**" />
+    <Page Remove="WpfApp_为对象属性赋值\**" />
+    <Page Remove="WpfApp_事件处理器\**" />
+    <Page Remove="WpfApp_属性标签\**" />
+    <Page Remove="WpfApp_标签扩展\**" />
+    <Page Remove="WpfApp_集合对象作为列表控件的ItemSource\**" />
+  </ItemGroup>
+
+</Project>

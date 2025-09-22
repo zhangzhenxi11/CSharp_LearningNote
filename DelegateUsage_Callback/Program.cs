@@ -15,6 +15,7 @@ namespace DelegateUsage_Callback
 
             Func<Product> func1 = new Func<Product>(prodouctFactory.MakePizza);
             Func<Product> func2 = new Func<Product>(prodouctFactory.MakeToyCar);
+
             Logger logger = new Logger();
             Action<Product> log = new Action<Product>(logger.Log);
 

@@ -22,7 +22,6 @@
         public string Size { get; set; }
     }
 
-
     //新建委托类型，为了后续使用Order事件
     //此处使用EventHandler后缀有三层意思：
     //1.此委托专门用来声明事件，
@@ -35,7 +34,7 @@
     {
         //public delegate void OrderEventHandler(Customer customer, OrderEventArgs e);  不能放到类里面，这是嵌套类型
 
-        private OrderEventHandler orderEventHandler;    //声明委托类型的字段，用于存储或者引用事件处理器   //完整声明
+        private OrderEventHandler orderEventHandler;     //声明委托类型的字段，用于存储或者引用事件处理器   //完整声明
 
         public event OrderEventHandler Order             //声明自定义事件Order，此时使用public希望被外界访问
         {

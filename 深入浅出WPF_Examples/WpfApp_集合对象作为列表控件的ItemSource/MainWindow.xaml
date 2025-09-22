@@ -1,0 +1,29 @@
+﻿<Window x:Class="WpfApp_集合对象作为列表控件的ItemSource.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WpfApp_集合对象作为列表控件的ItemSource"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid>
+        <StackPanel x:Name="stackPanel" Background="LightBlue">
+            <TextBlock Text="Student lD:" FontWeight="Bold" Margin="5" />
+            <TextBox x:Name="textBoxld" Margin="5" />
+            <TextBlock Text="Student List:" FontWeight="Bold" Margin="5" />
+            <ListBox x:Name="listBoxStudents" Height="110" Margin="5">
+                <!-- ItemTemplate 应该定义在 ListBox 内部 -->
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding Path=Id}" Width="30"/>
+                            <TextBlock Text="{Binding Path=Name}" Width="60"/>
+                            <TextBlock Text="{Binding Path=Age}" Width="30"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <!-- 注意 ListBox 标签的闭合 -->
+        </StackPanel>
+    </Grid>
+</Window>

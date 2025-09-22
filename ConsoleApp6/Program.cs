@@ -10,7 +10,6 @@
            customer.Action();
            customer.PayTheBill();
            Console.WriteLine("=====");
-
         }
     }
     public class OrderEventArgs : EventArgs //新建传递事件消息的类    

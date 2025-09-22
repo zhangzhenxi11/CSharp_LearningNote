@@ -57,7 +57,6 @@
                 e.Size = "large";
                 this.Order.Invoke(this, e);
             }
-
         }
         public void Action()
         {
